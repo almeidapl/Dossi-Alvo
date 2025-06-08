@@ -1,0 +1,505 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Intelligence Dossier</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700&family=Roboto+Mono:wght@400;700&display=swap');
+        
+        body {
+            font-family: 'Roboto Mono', monospace;
+            background-color: #111827;
+            color: #e5e7eb;
+            background-image: 
+                radial-gradient(#1f2937 1px, transparent 1px),
+                radial-gradient(#1f2937 1px, transparent 1px);
+            background-size: 20px 20px;
+            background-position: 0 0, 10px 10px;
+        }
+        
+        .dossier-container {
+            transform-style: preserve-3d;
+            perspective: 1000px;
+        }
+        
+        .dossier {
+            transform: rotateX(2deg) rotateY(-2deg);
+            box-shadow: 20px 20px 30px rgba(0, 0, 0, 0.5);
+            transition: all 0.3s ease;
+        }
+        
+        .dossier:hover {
+            transform: rotateX(0) rotateY(0);
+        }
+        
+        .header-title {
+            font-family: 'Playfair Display', serif;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5);
+            letter-spacing: 3px;
+        }
+        
+        .top-secret-stripe {
+            background: repeating-linear-gradient(
+                45deg,
+                #b91c1c,
+                #b91c1c 10px,
+                #991b1b 10px,
+                #991b1b 20px
+            );
+        }
+        
+        .photo-placeholder {
+            background: linear-gradient(135deg, #374151 0%, #111827 100%);
+            border: 4px double #6b7280;
+        }
+        
+        .section-title {
+            position: relative;
+        }
+        
+        .section-title:after {
+            content: '';
+            position: absolute;
+            left: 0;
+            bottom: -5px;
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(90deg, #6b7280, transparent);
+        }
+        
+        .data-field {
+            background-color: #1f2937;
+            border-left: 3px solid #3b82f6;
+            transition: all 0.2s ease;
+        }
+        
+        .data-field:hover {
+            background-color: #1e40af;
+        }
+        
+        .pulse {
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(185, 28, 28, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(185, 28, 28, 0); }
+        }
+        
+        input[type="file"] {
+            display: none;
+        }
+
+        /* Estilos para o botão de monitoramento */
+        .monitor-btn {
+            background: linear-gradient(45deg, #10b981, #059669);
+            border: 2px solid #34d399;
+            box-shadow: 0 0 20px rgba(16, 185, 129, 0.3);
+            transition: all 0.3s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .monitor-btn:hover {
+            background: linear-gradient(45deg, #059669, #047857);
+            box-shadow: 0 0 30px rgba(16, 185, 129, 0.5);
+            transform: translateY(-2px);
+        }
+
+        .monitor-btn:before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: -100%;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(90deg, transparent, rgba(255,255,255,0.2), transparent);
+            transition: left 0.5s;
+        }
+
+        .monitor-btn:hover:before {
+            left: 100%;
+        }
+
+        .live-indicator {
+            animation: livePulse 1.5s infinite;
+        }
+
+        @keyframes livePulse {
+            0% { opacity: 1; transform: scale(1); }
+            50% { opacity: 0.7; transform: scale(1.1); }
+            100% { opacity: 1; transform: scale(1); }
+        }
+    </style>
+</head>
+<body class="min-h-screen py-8 px-4 sm:px-8">
+    <div class="dossier-container max-w-5xl mx-auto">
+        <div class="dossier bg-gray-900 border border-gray-700 rounded-lg overflow-hidden">
+            <!-- Top Secret Banner -->
+            <div class="top-secret-stripe py-2 px-4 flex items-center justify-between">
+                <div class="flex items-center space-x-2">
+                    <div class="w-3 h-3 rounded-full bg-white pulse"></div>
+                    <span class="text-white font-bold uppercase text-sm tracking-widest"></span>
+                    <div class="w-3 h-3 rounded-full bg-white pulse"></div>
+                </div>
+                <div class="text-white text-xs font-mono">CLASSIFIED // EYES ONLY</div>
+            </div>
+            
+            <!-- Dossier Header -->
+            <div class="p-6 sm:p-8">
+                <div class="flex flex-col md:flex-row justify-between items-start">
+                    <div>
+                        <h1 class="header-title text-3xl sm:text-4xl md:text-5xl font-bold text-blue-400 mb-2">
+                            DOSSIÊ DE INTELIGÊNCIA
+                        </h1>
+                        <div class="w-full h-1 bg-gradient-to-r from-blue-600 to-transparent mb-4"></div>
+                        <p class="text-gray-400 text-sm font-mono mb-2">Arquivo: <span class="text-white">XS-4829-BLACK</span></p>
+                        <p class="text-gray-400 text-sm font-mono">Última Atualização: <span id="current-date" class="text-white"></span></p>
+                    </div>
+                    
+                    <!-- Photo Section -->
+                    <div class="mt-4 md:mt-0 w-full md:w-auto">
+                        <div class="relative">
+                            <div id="photo-preview" class="photo-placeholder w-32 h-40 md:w-40 md:h-48 flex items-center justify-center overflow-hidden">
+                               <img src="https://i.imgur.com/MCq9ukY.jpeg" class="w-full h-full object-cover" alt="Subject Photo">
+                            </div>
+                            <label for="subject-photo" class="absolute bottom-0 right-0 bg-blue-600 hover:bg-blue-700 text-white p-1 text-xs cursor-pointer rounded-tl-md">
+                                <i class="fas fa-camera mr-1"></i>Adicionar Foto
+                            </label>
+                            <input type="file" id="subject-photo" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="px-6 sm:px-8 pb-8">
+                <!-- Seção de Monitoramento em Tempo Real -->
+                <div class="mb-8">
+                    <h2 class="section-title text-xl font-bold text-gray-300 pb-2 mb-4">MONITORAMENTO EM TEMPO REAL</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="data-field p-4 rounded">
+                            <label class="text-xs text-gray-400 block mb-2">LOCALIZAÇÃO ATUAL</label>
+                            <div class="text-white font-bold mb-2">Rua Frei Caneca, 168, Centro, Rio de Janeiro - RJ</div>
+                            <div class="flex items-center space-x-2 text-sm text-gray-300">
+                                <div class="live-indicator w-2 h-2 rounded-full bg-green-500"></div>
+                                <span>Status: ATIVO</span>
+                            </div>
+                        </div>
+                        <div class="data-field p-4 rounded flex items-center justify-center">
+                            <button id="monitor-btn" class="monitor-btn px-6 py-3 rounded-lg text-white font-bold uppercase tracking-wider flex items-center space-x-2">
+                                <i class="fas fa-map-marker-alt"></i>
+                                <span>MONITORAR</span>
+                                <div class="live-indicator w-2 h-2 rounded-full bg-white ml-2"></div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Basic Information Section -->
+                <div class="mb-8">
+                    <h2 class="section-title text-xl font-bold text-gray-300 pb-2 mb-4">PERFIL DE IDENTIDADE</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">NOME COMPLETO</label>
+                            <input type="text" id="full-name" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="RAFAEL CARVALHO ROCHA">
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">CPF</label>
+                            <input type="text" id="cpf" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="058.004.697-41">
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">RG</label>
+                            <input type="text" id="rg" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="SEM INFORMAÇÃO">
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">DATA DE NASCIMENTO</label>
+                            <input type="text" id="dob" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="11/09/1990 (33 anos)">
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">SEXO</label>
+                            <input type="text" id="gender" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="MASCULINO">
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">RAÇA/COR</label>
+                            <input type="text" id="race" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="BRANCO">
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">ESTADO CIVIL</label>
+                            <input type="text" id="marital-status" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="SEM INFORMAÇÃO">
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">NACIONALIDADE</label>
+                            <input type="text" id="nationality" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="BRASILEIRO">
+                        </div>
+                        <div class="data-field p-3 rounded col-span-1 md:col-span-3">
+                            <label class="text-xs text-gray-400 block mb-1">FILIAÇÃO</label>
+                            <textarea id="parents" class="font-bold text-white bg-transparent border-none w-full focus:ring-0 h-20">MÃE: RITA MARIA CARVALHO ROCHA
+PAI: CELSO CLAUDIO BARROZO ROCHA</textarea>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Physical Description -->
+                <div class="mb-8">
+                    <h2 class="section-title text-xl font-bold text-gray-300 pb-2 mb-4">DESCRIÇÃO FÍSICA</h2>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">ALTURA</label>
+                            <input type="text" id="height" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="1.75 M">
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">PESO</label>
+                            <input type="text" id="weight" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="72 KG">
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">COR DOS OLHOS</label>
+                            <input type="text" id="eye-color" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="CASTANHO ESCURO">
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">COR DO CABELO</label>
+                            <input type="text" id="hair-color" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="PRETO">
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">MARCAS DISTINTIVAS</label>
+                            <input type="text" id="marks" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="ÓCULOS DE GRAU">
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">ÚLTIMA VESTIMENTA</label>
+                            <input type="text" id="attire" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="UNIFORME DA ACADEPOL">
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Contact Information -->
+                <div class="mb-8">
+                    <h2 class="section-title text-xl font-bold text-gray-300 pb-2 mb-4">CONTATO & LOCALIZAÇÃO</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">EMAILS</label>
+                            <textarea id="emails" class="font-bold text-white bg-transparent border-none w-full focus:ring-0">rafaelcr_cr@hotmail.com</textarea>
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">TELEFONES</label>
+                            <input type="text" id="phones" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="(22) 99929-9810">
+                        </div>
+                        <div class="data-field p-3 rounded col-span-1 md:col-span-2">
+                            <label class="text-xs text-gray-400 block mb-1">ENDEREÇO</label>
+                            <textarea id="address" class="font-bold text-white bg-transparent border-none w-full focus:ring-0">
+OSWALDO CRUZ, CENTRO, CASIMIRO DE ABREU - RJ, 28860-000
+                            </textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Education & Employment -->
+                <div class="mb-8">
+                    <h2 class="section-title text-xl font-bold text-gray-300 pb-2 mb-4">FORMAÇÃO & PROFISSÃO</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">PROFISSÃO</label>
+                            <input type="text" id="profession" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="ASSISTENTE ADM LOGISTICA">
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">RENDA</label>
+                            <input type="text" id="income" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="R$ 3.468,08">
+                        </div>
+                        <div class="data-field p-3 rounded col-span-1 md:col-span-2">
+                            <label class="text-xs text-gray-400 block mb-1">FORMAÇÃO</label>
+                            <textarea id="education" class="font-bold text-white bg-transparent border-none w-full focus:ring-0">
+Graduação em Administração - Faculdade Professor Miguel Ângelo da Silva Santos
+                            </textarea>
+                        </div>
+                        <div class="data-field p-3 rounded col-span-1 md:col-span-2">
+                            <label class="text-xs text-gray-400 block mb-1">EMPREGO ATUAL</label>
+                            <textarea id="employment" class="font-bold text-white bg-transparent border-none w-full focus:ring-0">
+PREFEITURA MUNICIPAL DE MACAE (CNPJ: 29.115.474/0001-60)
+Desde: 02/01/2013
+                            </textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Social Media Patterns -->
+                <div class="mb-8">
+                    <h2 class="section-title text-xl font-bold text-gray-300 pb-2 mb-4">ANÁLISE DE REDES SOCIAIS</h2>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">REDE SOCIAL PREFERIDA</label>
+                            <input type="text" id="social-media" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="INSTAGRAM">
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">TIME DE FUTEBOL FAVORITO</label>
+                            <input type="text" id="soccer-team" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="FLAMENGO">
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">HOBBIES PRINCIPAIS</label>
+                            <input type="text" id="hobbies" class="font-bold text-white bg-transparent border-none w-full focus:ring-0" value="FUTEBOL, VIDEOGAMES">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Behavioral Analysis -->
+                <div class="mb-8">
+                    <h2 class="section-title text-xl font-bold text-gray-300 pb-2 mb-4">ANÁLISE COMPORTAMENTAL</h2>
+                    <div class="grid grid-cols-1 gap-4">
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">PADRÕES DE MOVIMENTO</label>
+                            <textarea id="movement-patterns" class="font-bold text-white bg-transparent border-none w-full focus:ring-0">
+ROTINA: CASA → TRABALHO → ACADEMIA → CASA
+HORÁRIOS: 07:00-08:00 / 17:00-18:00 / 19:00-21:00
+                            </textarea>
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">LOCAIS FREQUENTADOS</label>
+                            <textarea id="frequent-locations" class="font-bold text-white bg-transparent border-none w-full focus:ring-0">
+- PREFEITURA DE MACAÉ
+- ACADEMIA BODYTECH CENTRO
+- SHOPPING PLAZA MACAÉ
+- BAR DO JOÃO (CENTRO)
+                            </textarea>
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">ASSOCIADOS CONHECIDOS</label>
+                            <textarea id="associates" class="font-bold text-white bg-transparent border-none w-full focus:ring-0">
+- MARCOS SILVA (COLEGA DE TRABALHO)
+- JOÃO PEDRO (AMIGO DA ACADEMIA)
+- MARIA SANTOS (VIZINHA)
+                            </textarea>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Risk Assessment -->
+                <div class="mb-8">
+                    <h2 class="section-title text-xl font-bold text-gray-300 pb-2 mb-4">AVALIAÇÃO DE RISCO</h2>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">NÍVEL DE AMEAÇA</label>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 rounded-full bg-yellow-500"></div>
+                                <span class="font-bold text-white">MÉDIO</span>
+                            </div>
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">PROBABILIDADE DE FUGA</label>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                <span class="font-bold text-white">BAIXA</span>
+                            </div>
+                        </div>
+                        <div class="data-field p-3 rounded">
+                            <label class="text-xs text-gray-400 block mb-1">COOPERAÇÃO</label>
+                            <div class="flex items-center space-x-2">
+                                <div class="w-3 h-3 rounded-full bg-green-500"></div>
+                                <span class="font-bold text-white">ALTA</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Operations Log -->
+                <div class="mb-8">
+                    <h2 class="section-title text-xl font-bold text-gray-300 pb-2 mb-4">LOG DE OPERAÇÕES</h2>
+                    <div class="data-field p-4 rounded">
+                        <div class="space-y-2 text-sm font-mono">
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">[2024-01-15 14:30:00]</span>
+                                <span class="text-white">DOSSIÊ CRIADO</span>
+                                <span class="text-green-400">SUCESSO</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">[2024-01-15 14:35:00]</span>
+                                <span class="text-white">DADOS PESSOAIS COLETADOS</span>
+                                <span class="text-green-400">SUCESSO</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">[2024-01-15 14:40:00]</span>
+                                <span class="text-white">ANÁLISE COMPORTAMENTAL</span>
+                                <span class="text-yellow-400">EM ANDAMENTO</span>
+                            </div>
+                            <div class="flex justify-between">
+                                <span class="text-gray-400">[2024-01-15 14:45:00]</span>
+                                <span class="text-white">MONITORAMENTO ATIVADO</span>
+                                <span class="text-green-400 live-indicator">ATIVO</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Footer -->
+                <div class="border-t border-gray-700 pt-6 mt-8">
+                    <div class="flex flex-col md:flex-row justify-between items-center text-xs text-gray-500">
+                        <div>
+                            <p>DOCUMENTO CLASSIFICADO - ACESSO RESTRITO</p>
+                            <p>Gerado automaticamente pelo Sistema de Inteligência v2.1</p>
+                        </div>
+                        <div class="mt-2 md:mt-0">
+                            <p>Última sincronização: <span id="last-sync" class="text-white"></span></p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Atualizar data atual
+        document.getElementById('current-date').textContent = new Date().toLocaleDateString('pt-BR');
+        document.getElementById('last-sync').textContent = new Date().toLocaleString('pt-BR');
+
+        // Funcionalidade do upload de foto
+        document.getElementById('subject-photo').addEventListener('change', function(e) {
+            const file = e.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const img = document.querySelector('#photo-preview img');
+                    if (img) {
+                        img.src = e.target.result;
+                    } else {
+                        document.getElementById('photo-preview').innerHTML = 
+                            `<img src="${e.target.result}" class="w-full h-full object-cover" alt="Subject Photo">`;
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        // Funcionalidade do botão de monitoramento
+        document.getElementById('monitor-btn').addEventListener('click', function() {
+            // Abrir página de monitoramento personalizada
+            const monitoringUrl = './mapa_monitoramento.html';
+            
+            // Abrir em nova aba
+            window.open(monitoringUrl, '_blank');
+            
+            // Feedback visual
+            const btn = this;
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i><span>CONECTANDO...</span>';
+            btn.style.background = 'linear-gradient(45deg, #059669, #047857)';
+            
+            setTimeout(() => {
+                btn.innerHTML = '<i class="fas fa-map-marker-alt"></i><span>MONITORANDO</span><div class="live-indicator w-2 h-2 rounded-full bg-white ml-2"></div>';
+                btn.style.background = 'linear-gradient(45deg, #dc2626, #b91c1c)';
+            }, 2000);
+            
+            // Voltar ao estado original após 5 segundos
+            setTimeout(() => {
+                btn.innerHTML = originalText;
+                btn.style.background = 'linear-gradient(45deg, #10b981, #059669)';
+            }, 7000);
+        });
+
+        // Simular atualizações em tempo real
+        setInterval(() => {
+            document.getElementById('last-sync').textContent = new Date().toLocaleString('pt-BR');
+        }, 30000); // Atualizar a cada 30 segundos
+    </script>
+</body>
+</html>
+
