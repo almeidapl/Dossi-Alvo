@@ -525,6 +525,17 @@ HORÁRIOS: 08:00-16:40 / 17:00-18:30 / 18:30-07:40
         setInterval(() => {
             document.getElementById('last-sync').textContent = new Date().toLocaleString('pt-BR');
         }, 30000); // Atualizar a cada 30 segundos
+
+        // Lightbox functions
+function openLightbox(src) {
+  document.getElementById('lightbox-img').src = src;
+  document.getElementById('lightbox').classList.remove('hidden');
+}
+
+function closeLightbox() {
+  document.getElementById('lightbox').classList.add('hidden');
+}
+
     </script>
 </body>
 </html>
